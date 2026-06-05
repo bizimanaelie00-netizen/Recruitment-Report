@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Cohort Report — Rwanda 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f3;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --text: #1a1a1a;
+    --text-muted: #6b6760;
+    --text-light: #9b9890;
+    --border: rgba(0,0,0,0.08);
+    --border-strong: rgba(0,0,0,0.15);
+    --blue: #2563a8;
+    --blue-light: #dbeafe;
+    --teal: #0f7b5e;
+    --teal-light: #d1fae5;
+    --coral: #c44b23;
+    --coral-light: #fee2d5;
+    --amber: #9a5f0a;
+    --amber-light: #fef3c7;
+    --pink: #9b3060;
+    --pink-light: #fce7f3;
+    --purple: #5b3ea8;
+    --purple-light: #ede9fe;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .page-wrap { max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  /* Header */
+  .report-header { margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid var(--border-strong); }
+  .report-header .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-light); margin-bottom: 12px; }
+  .report-header h1 { font-family: 'DM Serif Display', serif; font-size: 42px; font-weight: 400; line-height: 1.1; color: var(--text); margin-bottom: 12px; }
+  .report-header .subtitle { font-size: 16px; color: var(--text-muted); }
+  .report-header .meta { display: flex; gap: 24px; margin-top: 20px; flex-wrap: wrap; }
+  .meta-item { font-size: 13px; color: var(--text-light); }
+  .meta-item strong { color: var(--text); font-weight: 500; }
+
+  /* Section */
+  .section { margin-bottom: 56px; }
+  .section-label { font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-light); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+
+  /* Metric grid */
+  .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; }
+  .metric-card .label { font-size: 11px; color: var(--text-light); font-weight: 500; letter-spacing: 0.04em; margin-bottom: 6px; text-transform: uppercase; }
+  .metric-card .value { font-size: 30px; font-weight: 300; line-height: 1; color: var(--text); letter-spacing: -0.02em; }
+  .metric-card .sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  .metric-card.accent-blue { border-left: 3px solid var(--blue); }
+  .metric-card.accent-teal { border-left: 3px solid var(--teal); }
+  .metric-card.accent-coral { border-left: 3px solid var(--coral); }
+  .metric-card.accent-amber { border-left: 3px solid var(--amber); }
+  .metric-card.accent-purple { border-left: 3px solid var(--purple); }
+
+  /* Charts */
+  .chart-container { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px; }
+  .chart-title { font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 16px; }
+  .chart-wrap { position: relative; width: 100%; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* Legend */
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 14px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+  .legend-swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+  /* Table */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th { text-align: left; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-light); padding: 8px 12px; border-bottom: 1px solid var(--border-strong); }
+  .data-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--bg); }
+  .data-table .num { font-weight: 500; color: var(--blue); }
+  .data-table .bar-cell { width: 120px; }
+  .bar-bg { background: var(--surface2); border-radius: 2px; height: 6px; overflow: hidden; }
+  .bar-fill { height: 6px; border-radius: 2px; background: var(--blue); }
+  .bar-fill.teal { background: var(--teal); }
+
+  /* Note */
+  .note { font-size: 12px; color: var(--text-light); margin-top: 12px; padding: 10px 14px; background: var(--surface2); border-radius: 6px; }
+
+  /* Stat row */
+  .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-row .stat-label { font-size: 14px; color: var(--text); }
+  .stat-row .stat-val { font-size: 22px; font-weight: 300; color: var(--text); }
+  .stat-row .stat-pct { font-size: 12px; color: var(--text-muted); margin-left: 6px; }
+
+  /* Gender pill */
+  .pill { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+  .pill-blue { background: var(--blue-light); color: var(--blue); }
+  .pill-pink { background: var(--pink-light); color: var(--pink); }
+
+  /* Footer */
+  .footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-light); text-align: center; }
+
+  /* Print */
+  @media print {
+    body { background: white; }
+    .page-wrap { padding: 24px; }
+    .chart-container { break-inside: avoid; }
+    .section { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <header class="report-header">
+    <div class="eyebrow">Analytics Report</div>
+    <h1>Student Cohort Overview</h1>
+    <p class="subtitle">Detailed breakdown of 341 applicants across gender, schools, academic performance, demographics, and more.</p>
+    <div class="meta">
+      <span class="meta-item"><strong>341</strong> total applicants</span>
+      <span class="meta-item"><strong>141</strong> unique schools</span>
+      <span class="meta-item"><strong>30</strong> districts represented</span>
+      <span class="meta-item"><strong>Rwanda</strong> · 2026</span>
+    </div>
+  </header>
+
+  <!-- Gender -->
+  <div class="section">
+    <div class="section-label">Gender Distribution</div>
+    <div class="two-col" style="align-items:start">
+      <div class="chart-container">
+        <div class="chart-title">Male vs Female split</div>
+        <div class="legend">
+          <span class="legend-item"><span class="legend-swatch" style="background:#2563a8"></span>Male — 200 (58.7%)</span>
+          <span class="legend-item"><span class="legend-swatch" style="background:#9b3060"></span>Female — 141 (41.3%)</span>
+        </div>
+        <div class="chart-wrap" style="height:220px">
+          <canvas id="genderChart" role="img" aria-label="Donut chart: 200 male students (58.7%) and 141 female students (41.3%)">Male: 200 (58.7%), Female: 141 (41.3%)</canvas>
+        </div>
+      </div>
+      <div class="chart-container" style="display:flex;flex-direction:column;justify-content:center;gap:0">
+        <div class="stat-row">
+          <span class="stat-label"><span class="pill pill-blue">Male</span></span>
+          <span><span class="stat-val">200</span><span class="stat-pct">58.7%</span></span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label"><span class="pill pill-pink">Female</span></span>
+          <span><span class="stat-val">141</span><span class="stat-pct">41.3%</span></span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label" style="color:var(--text-muted)">Total</span>
+          <span><span class="stat-val">341</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Age -->
+  <div class="section">
+    <div class="section-label">Age Distribution</div>
+    <div class="metric-grid">
+      <div class="metric-card accent-blue"><div class="label">Aged 15–20</div><div class="value">341</div><div class="sub">100% of cohort</div></div>
+      <div class="metric-card accent-teal"><div class="label">Aged above 20</div><div class="value">0</div><div class="sub">none in cohort</div></div>
+      <div class="metric-card accent-amber"><div class="label">Most common age</div><div class="value">17</div><div class="sub">128 students</div></div>
+      <div class="metric-card accent-purple"><div class="label">Average birth year</div><div class="value">2009</div><div class="sub">age ~17</div></div>
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">Students per age group (all between 15 and 20)</div>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-swatch" style="background:#2563a8"></span>Number of students</span>
+      </div>
+      <div class="chart-wrap" style="height:240px">
+        <canvas id="ageChart" role="img" aria-label="Bar chart: age 15=14, 16=97, 17=128, 18=66, 19=29, 20=7">Age 15: 14, Age 16: 97, Age 17: 128, Age 18: 66, Age 19: 29, Age 20: 7</canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Academic Rankings -->
+  <div class="section">
+    <div class="section-label">Academic Rankings — S4</div>
+    <div class="metric-grid">
+      <div class="metric-card accent-blue"><div class="label">Ranked 1st — Term 1</div><div class="value">132</div><div class="sub">38.7% of applicants</div></div>
+      <div class="metric-card accent-teal"><div class="label">Ranked 1st — Term 2</div><div class="value">140</div><div class="sub">41.1% of applicants</div></div>
+      <div class="metric-card accent-amber"><div class="label">90%+ score T1</div><div class="value">45</div><div class="sub">of 320 with data (14.1%)</div></div>
+      <div class="metric-card accent-coral"><div class="label">90%+ score T2</div><div class="value">47</div><div class="sub">of 295 with data (15.9%)</div></div>
+    </div>
+    <p class="note">Ranking data is self-reported as free text (e.g. "1st out of 42", "FIRST", "1/30"). All students who clearly indicated first place are counted. A high number reflects this cohort is top-performing — many applicants are already ranked first in schools with 20–60+ students per class.</p>
+  </div>
+
+  <!-- O-Level National Exam -->
+  <div class="section">
+    <div class="section-label">O-Level National Examination</div>
+    <div class="metric-grid">
+      <div class="metric-card accent-blue"><div class="label">Scored 90% and above</div><div class="value">141</div><div class="sub">48% of 294 with data</div></div>
+      <div class="metric-card accent-teal"><div class="label">Average score</div><div class="value">86%</div><div class="sub">across 294 students</div></div>
+      <div class="metric-card accent-amber"><div class="label">Below 90%</div><div class="value">153</div><div class="sub">52% of 294 with data</div></div>
+      <div class="metric-card accent-coral"><div class="label">No data provided</div><div class="value">47</div><div class="sub">13.8% of cohort</div></div>
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">O-Level score distribution</div>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-swatch" style="background:#2563a8"></span>90%+ (141 · 48%)</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#9b9890"></span>Below 90% (153 · 52%)</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#e0ddd5"></span>No data (47)</span>
+      </div>
+      <div class="chart-wrap" style="height:200px">
+        <canvas id="olevChart" role="img" aria-label="Donut: 141 scored 90%+, 153 below 90%, 47 no data">141 scored 90%+, 153 below 90%, 47 no data provided.</canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Refugee & Disability -->
+  <div class="section">
+    <div class="section-label">Refugee Status & Disability</div>
+    <div class="two-col">
+      <div class="chart-container">
+        <div class="chart-title">Refugee status</div>
+        <div class="legend">
+          <span class="legend-item"><span class="legend-swatch" style="background:#2563a8"></span>Refugee (32 · 9.9%)</span>
+          <span class="legend-item"><span class="legend-swatch" style="background:#c0bdb8"></span>Not refugee (290 · 90.1%)</span>
+        </div>
+        <div class="chart-wrap" style="height:180px">
+          <canvas id="refugeeChart" role="img" aria-label="Donut: 32 refugees (9.9%), 290 not refugees (90.1%)">32 refugees (9.9%), 290 non-refugees (90.1%)</canvas>
+        </div>
+        <div class="note" style="margin-top:14px">19 students did not answer this question.</div>
+      </div>
+      <div class="chart-container">
+        <div class="chart-title">Disability status</div>
+        <div class="legend">
+          <span class="legend-item"><span class="legend-swatch" style="background:#c44b23"></span>Has disability (43 · 13.0%)</span>
+          <span class="legend-item"><span class="legend-swatch" style="background:#c0bdb8"></span>No disability (287 · 87.0%)</span>
+        </div>
+        <div class="chart-wrap" style="height:180px">
+          <canvas id="disabilityChart" role="img" aria-label="Donut: 43 students with disability (13%), 287 without (87%)">43 with disability (13%), 287 without (87%)</canvas>
+        </div>
+        <div class="note" style="margin-top:14px">11 students did not answer this question.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Schools -->
+  <div class="section">
+    <div class="section-label">Schools — Top 20 by Applicants (after name cleaning)</div>
+    <p class="note" style="margin-bottom:16px">School names were standardised to correct spelling variants, abbreviations and duplicates (e.g. "RCA", "Rwanda Coding Acacemy" → "Rwanda Coding Academy"; "Gashora Girls Academy of Science and Technology." → "Gashora Girls Academy"; "GS.O Butare", "Groupe Scolaire Officielle de Butare", etc. → "GS Officiel de Butare"). 141 unique schools total.</p>
+    <div class="chart-container">
+      <div class="chart-title">Number of applicants per school (top 20)</div>
+      <div class="chart-wrap" style="height:680px">
+        <canvas id="schoolChart" role="img" aria-label="Horizontal bar chart of top 20 schools by applicant count after name standardisation">Top school: Gashora Girls Academy, GS Officiel de Butare, Ecole des Sciences Byimana — each with 11 students.</canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- All Schools Table -->
+  <div class="section">
+    <div class="section-label">All Schools — Complete List (2+ applicants)</div>
+    <div class="chart-container" style="padding:0;overflow:hidden">
+      <table class="data-table" id="schoolTable">
+        <thead><tr><th>#</th><th>School</th><th>Applicants</th><th class="bar-cell"></th></tr></thead>
+        <tbody id="schoolTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Districts -->
+  <div class="section">
+    <div class="section-label">District of Residence — Top 25</div>
+    <div class="chart-container">
+      <div class="chart-title">Applicants by district (where students currently live)</div>
+      <div class="chart-wrap" style="height:700px">
+        <canvas id="districtChart" role="img" aria-label="Horizontal bar chart of applicants by district">Top districts: Gasabo (35), Kicukiro (31), Kirehe (27), Bugesera (23), Rusizi (21)</canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Districts table -->
+  <div class="section">
+    <div class="section-label">All Districts Represented</div>
+    <div class="chart-container" style="padding:0;overflow:hidden">
+      <table class="data-table">
+        <thead><tr><th>#</th><th>District</th><th>Applicants</th><th class="bar-cell"></th></tr></thead>
+        <tbody id="districtTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>Student Cohort Report · Rwanda · 2026 · 341 applicants · Generated from application data</p>
+    <p style="margin-top:6px">School names were standardised from 234 raw entries to 141 verified unique schools.</p>
+  </footer>
+
+</div>
+
+<script>
+const BLUE = '#2563a8', TEAL = '#0f7b5e', CORAL = '#c44b23', AMBER = '#9a5f0a', GRAY = '#9b9890', LIGHT = '#e0ddd5', PINK = '#9b3060';
+
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.color = '#6b6760';
+
+function donut(id, labels, data, colors) {
+  new Chart(document.getElementById(id), {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { display: false } } }
+  });
+}
+
+donut('genderChart', ['Male', 'Female'], [200, 141], [BLUE, PINK]);
+donut('olevChart', ['90%+ (141)', 'Below 90% (153)', 'No data (47)'], [141, 153, 47], [BLUE, GRAY, LIGHT]);
+donut('refugeeChart', ['Refugee (32)', 'Not refugee (290)'], [32, 290], [BLUE, '#c0bdb8']);
+donut('disabilityChart', ['Has disability (43)', 'No disability (287)'], [43, 287], [CORAL, '#c0bdb8']);
+
+new Chart(document.getElementById('ageChart'), {
+  type: 'bar',
+  data: {
+    labels: ['15 years', '16 years', '17 years', '18 years', '19 years', '20 years'],
+    datasets: [{ data: [14, 97, 128, 66, 29, 7], backgroundColor: [BLUE, BLUE, BLUE, BLUE, BLUE, BLUE], borderRadius: 5, borderWidth: 0 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y} students` } } },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: '#6b6760' } },
+      y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#6b6760', stepSize: 20 } }
+    }
+  }
+});
+
+const schools = [
+  'Gashora Girls Academy','GS Officiel de Butare','Ecole des Sciences Byimana',
+  'Rwanda Coding Academy','College Saint André','Agahozo-Shalom Youth Village',
+  'Hope Haven Christian Secondary School','GS Notre Dame du Bon Conseil Byumba',
+  'Lycée de Kigali','Lycée Saint Jérôme Janja','GS Gihundwe',
+  'Rwanda Children Christian School','Lycée Notre Dame de Cîteaux',
+  'Ecole des Sciences de Musanze','Cornerstone Leadership Academy',
+  'Maranyundo Girls School','Ecole Notre Dame de la Providence Karubanda',
+  'Wisdom High School','Rwamagana Leaders School','GS Mère du Verbe Kibeho'
+];
+const schoolCounts = [11,11,11,10,9,9,8,8,8,8,8,7,7,7,7,6,6,6,6,5];
+
+new Chart(document.getElementById('schoolChart'), {
+  type: 'bar',
+  data: {
+    labels: schools,
+    datasets: [{ data: schoolCounts, backgroundColor: TEAL, borderRadius: 4, borderWidth: 0 }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x} applicants` } } },
+    scales: {
+      x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#6b6760', stepSize: 1 } },
+      y: { grid: { display: false }, ticks: { color: '#3a3a3a', font: { size: 12 } } }
+    }
+  }
+});
+
+const districts = ['Gasabo','Kicukiro','Kirehe','Bugesera','Rusizi','Kayonza','Nyagatare','Kamonyi','Musanze','Nyarugenge','Huye','Gicumbi','Nyamagabe','Muhanga','Gatsibo','Rwamagana','Karongi','Nyabihu','Rubavu','Ruhango','Gisagara','Gakenke','Burera','Nyamasheke','Nyaruguru'];
+const distCounts = [35,31,27,23,21,16,16,13,13,12,11,11,11,11,10,8,8,8,7,6,6,6,6,6,6];
+
+new Chart(document.getElementById('districtChart'), {
+  type: 'bar',
+  data: {
+    labels: districts,
+    datasets: [{ data: distCounts, backgroundColor: BLUE, borderRadius: 4, borderWidth: 0 }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x} applicants` } } },
+    scales: {
+      x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#6b6760' } },
+      y: { grid: { display: false }, ticks: { color: '#3a3a3a', font: { size: 12 } } }
+    }
+  }
+});
+
+// School table (schools with 2+ applicants)
+const allSchools = [
+  ['Gashora Girls Academy',11],['GS Officiel de Butare',11],['Ecole des Sciences Byimana',11],
+  ['Rwanda Coding Academy',10],['College Saint André',9],['Agahozo-Shalom Youth Village',9],
+  ['Hope Haven Christian Secondary School',8],['GS Notre Dame du Bon Conseil Byumba',8],
+  ['Lycée de Kigali',8],['Lycée Saint Jérôme Janja',8],['GS Gihundwe',8],
+  ['Rwanda Children Christian School',7],['Lycée Notre Dame de Cîteaux',7],
+  ['Ecole des Sciences de Musanze',7],['Cornerstone Leadership Academy',7],
+  ['Maranyundo Girls School',6],['Ecole Notre Dame de la Providence Karubanda',6],
+  ['Wisdom High School',6],['Rwamagana Leaders School',6],
+  ['GS Mère du Verbe Kibeho',5],['Collège Adventiste de Gitwe',4],
+  ['GS Saint Aloys Rwamagana',4],['Kagarama Secondary School',4],
+  ['ES Rukomo SOPEM',4],['FAWE Girls School Gisozi',4],
+  ['Kigali Christian School',4],['Maryhill Girls Secondary School',4],
+  ['ES Ruhango',3],['GS Saint Joseph Nyamasheke',3],['GS Dihiro',3],
+  ['ES Mubuga',3],['ES Sancta Maria Karambo',3],['ES Saint François de Shangi',3],
+  ['Lycée de Rusumo',3],['Gabiro High School',3],['GS Remera Rukoma',3],
+  ['ES Stella Matutina',3],['FAWE Girls School',3],['Ecole des Sciences Nyamagabe',3],
+  ['GS Zaza A',2],['GS Saint Paul Muko',2],['ES Nyamugali',2],
+  ['College Saint Bernard Kansi',2],['Petit Séminaire Saint Léon Kabgayi',2],
+  ['Saint Antoine Secondary School',2],['Lycee de Nyanza',2],
+  ['Petit Séminaire Saint Jean Paul II Gikongoro',2],['Regina Pacis School',2],
+  ['Collège du Christ Roi',2],['Ecole des Sciences de Gisenyi',2],
+  ['Saint Mary\'s High School Kiruhura',2],['ES Kirambo',2],
+  ['Petit Séminaire Saint Vincent de Ndera',2],['Ifak Don Bosco',2],
+  ['FAWE Girls School Gahini',2],['CIC Muramba',2],['ES Kirinda',2],
+  ['ES Bumbogo',2],['GS Notre Dame de Lourde Byimana',2]
+];
+const maxCount = allSchools[0][1];
+const tbody = document.getElementById('schoolTableBody');
+allSchools.forEach(([name, count], i) => {
+  const pct = Math.round((count / maxCount) * 100);
+  tbody.innerHTML += `<tr><td style="color:var(--text-light);font-size:12px">${i+1}</td><td>${name}</td><td class="num">${count}</td><td class="bar-cell"><div class="bar-bg"><div class="bar-fill teal" style="width:${pct}%"></div></div></td></tr>`;
+});
+
+// District table
+const allDistricts = [
+  ['Gasabo',35],['Kicukiro',31],['Kirehe',27],['Bugesera',23],['Rusizi',21],
+  ['Kayonza',16],['Nyagatare',16],['Kamonyi',13],['Musanze',13],['Nyarugenge',12],
+  ['Huye',11],['Gicumbi',11],['Nyamagabe',11],['Muhanga',11],['Gatsibo',10],
+  ['Rwamagana',8],['Karongi',8],['Nyabihu',8],['Rubavu',7],['Ruhango',6],
+  ['Gisagara',6],['Gakenke',6],['Burera',6],['Nyamasheke',6],['Nyaruguru',6],
+  ['Nyanza',5],['Ngoma',4],['Ngororero',2],['Rutsiro',1]
+];
+const maxDist = allDistricts[0][1];
+const dtbody = document.getElementById('districtTableBody');
+allDistricts.forEach(([name, count], i) => {
+  const pct = Math.round((count / maxDist) * 100);
+  dtbody.innerHTML += `<tr><td style="color:var(--text-light);font-size:12px">${i+1}</td><td>${name}</td><td class="num">${count}</td><td class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div></td></tr>`;
+});
+</script>
+</body>
+</html>
